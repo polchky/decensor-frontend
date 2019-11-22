@@ -1,4 +1,7 @@
 module.exports = {
+    plugins: [
+        'vuetify',
+    ],
     root: true,
     env: {
         browser: true,
@@ -10,6 +13,11 @@ module.exports = {
         'plugin:vue/recommended',
     ],
     rules: {
+        'no-underscore-dangle': [
+            'error', {
+                allow: ['_id'],
+            },
+        ],
         'arrow-parens': [
             'error',
             'always',
@@ -35,6 +43,9 @@ module.exports = {
                 props: false,
             },
         ],
+        'vuetify/no-deprecated-classes': 'error',
+        'vuetify/grid-unknown-attributes': 'error',
+        'vuetify/no-legacy-grid': 'error',
     },
     parserOptions: {
         parser: 'babel-eslint',

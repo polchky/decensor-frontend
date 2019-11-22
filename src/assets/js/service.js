@@ -14,7 +14,12 @@ export default {
         }
     },
 
-    async getRegions() {
+    getRegions() {
         return axios.get('/regions/');
+    },
+
+    async getChannels(ids, country) {
+        const res = await axios.get(`/channels/?id=${ids.join(',')}&country=${country}`);
+        return res.data;
     },
 };

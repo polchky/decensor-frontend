@@ -3,77 +3,63 @@
         id="inspire"
         dark
     >
-        <VToolbar
+        <VAppBar
+            clipped-left
             dense
             fixed
-            clipped-left
             app
         >
             <VSpacer />
             <VToolbarTitle>{{ title }}</VToolbarTitle>
 
             <VSpacer />
-        </VToolbar>
+        </VAppBar>
 
         <VContent>
-            <VExpansionPanel v-model="panel">
-                <VExpansionPanelContent>
-                    <div slot="header">
-                        Get started
-                    </div>
-                    <VBtn
-                        v-if="gapiInitialized"
-                        class="mt-5"
-                        dark
-                        @click="signIn"
-                    >
-                        <span>
-                            relol
-                            {{ panel }}
-                        </span>
-                    </VBtn>
-                    <VBtn
-                        v-if="gapiReady"
-                        class="mt-5"
-                        dark
-                        @click="getSubscriptionsPage()"
-                    >
-                        <span>
-                            relol
-                            {{ panel }}
-                        </span>
-                    </VBtn>
-                </VExpansionPanelContent>
-            </VExpansionPanel>
-            <VContainer
-                grid-list-lg
-            >
-                <VLayout
-                    row
-                    wrap
-                >
-                    <transition name="fade">
-                        <VProgressLinear
-                            v-if="nChannels == 0 || gettingChannels"
-                            color="success"
-                            height="10"
-                            :value=" 100 *
-                                ((channels.length - Object.keys(channelsIndex).length)/ nChannels)
-                                + 0.01"
-                            :buffer-value="100 * (channels.length / nChannels) + 0.01"
-                        />
-                    </transition>
-                    <VFlex xs12>
+            <VRow>
+                <VCol cols="12">
+                    <VFileInput
+                        label="File Input"
+                        @change="loadSubscriptionsFile"
+                    />
+                </VCol>
+            </VRow>
+            <vExpansionPanels>
+                <VExpansionPanel v-model="panel">
+                    <VExpansionPanelContent>
+                        <VBtn
+                            v-if="true"
+                            class="mt-5"
+                            dark
+                            @click="signIn"
+                        >
+                            <span>
+                                relol
+                                {{ panel }}
+                            </span>
+                        </VBtn>
+                        <VBtn
+                            v-if="gapiReady"
+                            class="mt-5"
+                            dark
+                            @click="getSubscriptionsPage()"
+                        >
+                            <span>
+                                relol
+                                {{ panel }}
+                            </span>
+                        </VBtn>
+                    </VExpansionPanelContent>
+                </VExpansionPanel>
+            </vExpansionPanels>
+            <VContainer>
+                <VRow>
+                    <VCol cols="12">
                         <VCard
                             min-width="500px"
                         >
-                            <VLayout
-                                row
-                                wrap
-                            >
-                                <VFlex
-                                    xs1
-                                >
+                            <VRow>
+                                <VCol cols="1">
                                     <VCardText>
                                         <v-icon
                                             v-if="gettingChannels"
@@ -82,10 +68,8 @@
                                             fas fa-circle-notch fa-spin
                                         </v-icon>
                                     </VCardText>
-                                </VFlex>
-                                <VFlex
-                                    xs4
-                                >
+                                </VCol>
+                                <VCol cols="4">
                                     <VCardText @click="sortChannels('title')">
                                         Title
                                         <v-icon
@@ -95,11 +79,9 @@
                                             fas fa-sort
                                         </v-icon>
                                     </VCardText>
-                                </VFlex>
-                                <VFlex
-                                    xs2
-                                >
-                                    <VCardText @click="sortChannels('relevance')">
+                                </VCol>
+                                <VCol cols="2">
+                                    <VCardText>
                                         Relevance
                                         <v-icon
                                             v-if="channelsSort"
@@ -108,11 +90,9 @@
                                             fas fa-sort
                                         </v-icon>
                                     </VCardText>
-                                </VFlex>
-                                <VFlex
-                                    xs2
-                                >
-                                    <VCardText @click="sortChannels('subscribers')">
+                                </VCol>
+                                <VCol cols="2">
+                                    <VCardText @click="sortChannels('subs')">
                                         Subscribers
                                         <v-icon
                                             v-if="channelsSort"
@@ -121,10 +101,8 @@
                                             fas fa-sort
                                         </v-icon>
                                     </VCardText>
-                                </VFlex>
-                                <VFlex
-                                    xs2
-                                >
+                                </VCol>
+                                <VCol cols="2">
                                     <VCardText @click="sortChannels('videos')">
                                         Videos
                                         <v-icon
@@ -134,17 +112,16 @@
                                             fas fa-sort
                                         </v-icon>
                                     </VCardText>
-                                </VFlex>
-                            </VLayout>
+                                </VCol>
+                            </VRow>
                         </VCard>
-                    </VFlex>
+                    </VCol>
                     <Channel
                         v-for="channel in channels"
                         :key="channel.id"
                         :channel="channel"
-                        @clicked="getPlaylistItemsPage"
                     />
-                </VLayout>
+                </VRow>
             </VContainer>
             <VSnackbar
                 v-model="showAlert"
@@ -199,11 +176,13 @@
 <script>
 
 import service from '@/assets/js/service';
+import Vue from 'vue';
+import _ from 'lodash';
 
 export default {
     data: () => ({
         panel: 0,
-        title: 'Youtube  Checker',
+        title: 'Youtube Decensor',
         drawer: null,
         simpleDialog: false,
         simpleRightButton: '',
@@ -218,12 +197,15 @@ export default {
         gapiReady: false,
         gettingChannels: false,
         channels: [],
+        channelsSort: {
+            criteria: null,
+            order: 'desc',
+        },
         pendingChannels: [],
         pendingVideos: [],
         channelsIndex: {},
         channelRelevance: 0,
         nChannels: 0,
-        channelsSort: null,
         maxResults: 50,
 
         gapi: null,
@@ -233,6 +215,11 @@ export default {
             'https://www.googleapis.com/auth/youtube.readonly',
         ],
     }),
+    computed: {
+        orderedChannels() {
+            return _.orderBy(this.channels, 'subs');
+        },
+    },
     watch: {
     },
     async mounted() {
@@ -333,6 +320,60 @@ export default {
             this.alertColor = mode;
             this.alertMessage = message;
             this.showAlert = true;
+        },
+
+        loadSubscriptionsFile(file) {
+            const reader = new FileReader();
+            reader.onload = (res) => this.parseChannels(res.target.result);
+            reader.readAsText(file);
+        },
+
+        parseChannels(file) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(file, 'text/xml');
+            const collection = doc.documentElement.firstElementChild.firstElementChild.children;
+            const channels = Array.from(collection);
+            for (let i = 0; i < channels.length; i += 1) {
+                Vue.set(
+                    this.channels,
+                    channels[i].getAttribute('xmlUrl').split('=')[1],
+                    { title: channels[i].getAttribute('title') }
+                );
+            }
+            this.fetchChannels();
+        },
+
+        async fetchChannels() {
+            const promises = [];
+            const ids = Object.keys(this.channels);
+            for (let i = 0; i < ids.length; i += this.maxResults) {
+                promises.push(service.getChannels(ids.slice(i, i + this.maxResults), 'CH'));
+            }
+            const channels = [];
+            const data = await Promise.all(promises);
+            for (let i = 0; i < data.length; i += 1) {
+                channels.push(...data[i]);
+            }
+            for (let i = 0; i < channels.length; i += 1) {
+                channels[i].thumbnail = `https://yt3.ggpht.com/${channels[i].thumbnail}`;
+            }
+            this.sortChannels('subs', channels);
+        },
+
+        sortChannels(criteria, channels = this.channels) {
+            if (this.channelsSort.criteria === criteria) {
+                this.channelsSort.order = this.channelsSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.channelsSort = {
+                    criteria,
+                    order: criteria === 'title' ? 'asc' : 'desc',
+                };
+            }
+            this.channels = _.orderBy(
+                channels,
+                this.channelsSort.criteria,
+                this.channelsSort.order
+            );
         },
 
     },

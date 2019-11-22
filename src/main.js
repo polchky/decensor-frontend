@@ -18,23 +18,27 @@ Vue.component('my-app', myApp);
 Vue.component('Channel', channel);
 
 
-Vue.use(
-    Vuetify,
-    {
-        theme: {
-            primary: colors.red.base,
-            secondary: colors.purple.base,
-            accent: colors.teal.base,
-            error: colors.brown.base,
-            warning: colors.amber.base,
-            info: colors.blue.base,
-            success: colors.green.base,
-        },
-    }
-);
+Vue.use(Vuetify);
 
+const vuetifyOptions = {
+    theme: {
+        dark: true,
+        themes: {
+            dark: {
+                primary: colors.red.base,
+                secondary: colors.purple.base,
+                accent: colors.teal.base,
+                error: colors.brown.base,
+                warning: colors.amber.base,
+                info: colors.blue.base,
+                success: colors.green.base,
+            },
+        },
+    },
+};
 
 new Vue({
     render: (h) => h(myApp),
     i18n,
+    vuetify: new Vuetify(vuetifyOptions),
 }).$mount('#app');
